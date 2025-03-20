@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+        }
+        input {
+            display: none;
+        }
+        label {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        img {
+            display: block;
+            margin: 10px auto;
+            max-width: 200px;
+            border-radius: 5px;
+        }
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Upload an Image for Prediction</h2>
+        
+        <label for="imageUpload">Choose Image</label>
+        <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(event)">
+        
+        <img id="preview" src="" alt="Preview will appear here" style="display: none;">
+        
+        <button onclick="uploadImage()">Predict</button>
+        
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            let reader = new FileReader();
+            reader.onload = function () {
+                let preview = document.getElementById("preview");
+                preview.src = reader.result;
+                preview.style.display = "block";
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function uploadImage() {
+            let fileInput = document.getElementById("imageUpload").files[0];
+            if (!fileInput) {
+                alert("Please select an image first!");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", fileInput);
+
+            fetch("/predict", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("result").innerText = "Error: " + data.error;
+                } else {
+                    document.getElementById("result").innerText = "Predicted Character: " + data.prediction;
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>
